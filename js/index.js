@@ -5,6 +5,7 @@ import cors from "cors";
 import mysql from "mysql2/promise";
 import multer from "multer";
 import path from "path";
+import bcrypt from "bcrypt";
 
 const app = express();
 
@@ -90,32 +91,34 @@ app.get("/users/:id", async (req, res) => {
 
 app.get("/posts", async (req, res) => {
   try {
-    await connectToDataBase(); // Ensure connection
     const [posts] = await connection.query(`
-            SELECT posts.*, users.username AS publisher_name
-            FROM posts
-            JOIN users ON posts.user_id = users.id
-            ORDER BY posts.created_at DESC
-        `);
+        SELECT posts.*, 
+               users.username AS publisher_name, 
+               COUNT(likes.id) AS total_likes
+        FROM posts
+        LEFT JOIN likes ON posts.id = likes.post_id
+        JOIN users ON posts.user_id = users.id
+        GROUP BY posts.id
+        ORDER BY posts.created_at DESC
+      `);
+
     res.json({
       result: posts,
     });
   } catch (error) {
-    res.status(500).send("error fetching /posts");
-    console.log("error fetching /posts");
+    res.status(500).send("Error fetching /posts");
     console.error("Error fetching /posts:", error);
-    console.log(posts);
   }
 });
 
 app.post("/posts", upload.single("image"), async (req, res) => {
-  const { title, content, users_id } = req.body; // Extract post details
+  const { title, content, user_id } = req.body; // Extract post details
   const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Save file path
 
   try {
     const [result] = await connection.query(
-      "INSERT INTO posts (title, content, users_id, image_path) VALUES (?, ?, ?, ?)",
-      [title, content, users_id, imagePath]
+      "INSERT INTO posts (title, content, user_id, image_path) VALUES (?, ?, ?, ?)",
+      [title, content, user_id, imagePath]
     );
     res.json({
       message: "The post was created successfully!",
@@ -124,6 +127,113 @@ app.post("/posts", upload.single("image"), async (req, res) => {
   } catch (error) {
     console.error("Error saving post:", error.message);
     res.status(500).json({ error: "Failed to create post.." });
+  }
+});
+
+// when user click on likebutton, send 1 like to the post id in server, then store it, then update total likes for that id post,
+// then save it.
+
+// "INSERT INTO posts (likes) VALUES (?)",
+// [likes]
+
+// app.get("/likes", async (req, res) => {
+
+// });
+
+app.post("/posts/:id/like", async (req, res) => {
+  const postId = req.params.id;
+  const { user_id } = req.body;
+
+  try {
+    // Attempt to insert a new like
+    await connection.execute(
+      "INSERT INTO likes (post_id, user_id) VALUES (?, ?)",
+      [postId, user_id]
+    );
+
+    res.status(201).json({ message: "Post liked successfully" });
+  } catch (error) {
+    // Handle duplicate likes
+    if (error.code === "ER_DUP_ENTRY") {
+      res.status(400).json({ error: "You have already liked this post" });
+    } else {
+      console.error("Error liking the post:", error);
+      res.status(500).json({ error: "Failed to like the post" });
+    }
+  }
+});
+
+app.post("/posts/:id/unlike", async (req, res) => {
+  const postId = req.params.id;
+  const { user_id } = req.body;
+
+  try {
+    const [result] = await connection.execute(
+      "DELETE FROM likes WHERE post_id = ? AND user_id = ?",
+      [postId, user_id]
+    );
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Post unliked successfully" });
+    } else {
+      res.status(404).json({ error: "Like not found" });
+    }
+  } catch (error) {
+    console.error("Error unliking the post:", error);
+    res.status(500).json({ error: "Failed to unlike the post" });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find the user by email
+    const [rows] = await connection.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const user = rows[0];
+    // Compare the entered password with the hashed password in the database
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Incorrect password" });
+    }
+    // Generate a JWT token or session (optional)
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      "your-secret-key",
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ error: "An error occurred during login" });
+  }
+});
+
+app.post("/register", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Store the hashed password in the database
+    await connection.execute(
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+      [username, email, hashedPassword]
+    );
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ error: "Failed to register user" });
   }
 });
 
