@@ -1,43 +1,33 @@
-document.getElementById("submit-button").addEventListener("submit" => {
-    const thePasswordInput = getElementById("password-input").value;
-    const theEmailInput = getElementById("email-input").value;
+document
+  .getElementById("log-in-form")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const emailInput = document.getElementById("email-input").value;
+    const passwordInput = document.getElementById("password-input").value;
 
-    function sendToSever() , async => {
-
-    }
     try {
-        if thePasswordInput {
+      const response = await fetch("http://localhost:5005/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: emailInput, password: passwordInput }),
+      });
 
-        } else {
+      const data = await response.json();
 
-        }
-        return[];
-    } catch (error) {
-        console.error
-    }
-    
-
-}
-
-async function updatePlainTextPasswords() {
-    try {
-      const [users] = await connection.query("SELECT id, password FROM users");
-  
-      for (const user of users) {
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-  
-        // Update the user's password with the hashed version
-        await connection.execute(
-          "UPDATE users SET password = ? WHERE id = ?",
-          [hashedPassword, user.id]
-        );
+      if (response.ok) {
+        document.getElementById("log-in-status").innerText =
+          "Login successful!";
+        window.location.href = "create-post.html";
+        console.log("Server Response:", data);
+      } else {
+        document.getElementById("log-in-status").innerText =
+          data.error || "Login failed :O Please try again later";
       }
-  
-      console.log("Passwords updated successfully!");
     } catch (error) {
-      console.error("Error updating passwords:", error);
+      console.error("Error connecting to the server:", error);
+      document.getElementById("log-in-status").innerText =
+        "Error connecting to the server.";
     }
-};
-  
-updatePlainTextPasswords();
-  
+  });

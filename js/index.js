@@ -193,27 +193,25 @@ app.post("/login", async (req, res) => {
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
+
     if (rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found." });
     }
+
     const user = rows[0];
-    // Compare the entered password with the hashed password in the database
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Incorrect password" });
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid password." });
     }
-    // Generate a JWT token or session (optional)
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      "your-secret-key",
-      {
-        expiresIn: "1h",
-      }
-    );
-    res.status(200).json({ message: "Login successful", token });
+
+    // If successful, return a success message or a session token
+    res.status(200).json({ message: "Login successful!", userId: user.id });
   } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({ error: "An error occurred during login" });
+    console.error("Error during login:", error);
+    res.status(500).json({ error: "Server error. Please try again later." });
   }
 });
 
