@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node js/index.js",
     "dev": "node --watch js/index.js",
     "build:css": "npx tailwindcss -i ./css/style.css -o ./dist/output.css --watch"
   },
