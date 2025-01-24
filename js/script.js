@@ -1,4 +1,4 @@
-import { BASE_URL } from './config.js';
+import { BASE_URL } from "./config.js";
 
 async function fetchPosts() {
   try {
@@ -26,7 +26,7 @@ function displayPosts(singlePosts) {
               <p>Likes: ${postContainer.total_likes}</p>
               ${
                 postContainer.image_path
-                  ? `<img src="${BASE_URL}/${postContainer.image_path}" alt="${postContainer.title}" />`
+                  ? `<img src="${BASE_URL}${postContainer.image_path}" alt="${postContainer.title}" />`
                   : ""
               }
               <button onclick="likePost(${postContainer.id})">Like</button>
