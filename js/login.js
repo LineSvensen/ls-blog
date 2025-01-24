@@ -1,3 +1,5 @@
+import { BASE_URL } from './config.js';
+
 document
   .getElementById("log-in-form")
   .addEventListener("submit", async (event) => {
@@ -6,7 +8,7 @@ document
     const passwordInput = document.getElementById("password-input").value;
 
     try {
-      const response = await fetch("http://localhost:5005/login", {
+      const response = await fetch(`${BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
