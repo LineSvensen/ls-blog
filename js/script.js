@@ -19,17 +19,22 @@ function displayPosts(singlePosts) {
   const postsDiv = document.getElementById("posts");
   singlePosts.forEach((postContainer) => {
     const postHtmlContent = `
-          <div>
-              <h2>${postContainer.title}</h2>
-              <p>${postContainer.content}</p>
+          <div class="flex flex-col justify-center items-center w-[360px] md:w-[360] lg:w-[500px] p-4 bg-white shadow-md rounded-lg mb-6">
               <p>By: ${postContainer.publisher_name}</p>
-              <p>Likes: ${postContainer.total_likes}</p>
+              <h2 class="text-xl font-bold mb-2">${postContainer.title}</h2>
+              <p class="text-gray-700 mb-4">${postContainer.content}</p>
+              
               ${
                 postContainer.image_path
-                  ? `<img src="${BASE_URL}${postContainer.image_path}" alt="${postContainer.title}" />`
+                  ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
                   : ""
               }
-              <button onclick="likePost(${postContainer.id})">Like</button>
+              <div class="flex flex-row">
+                <button onclick="likePost(${
+                  postContainer.id
+                })" class="p-4">Like</button>
+                <p class="p-4">Likes: ${postContainer.total_likes}</p>
+              </div>  
           </div>
         `;
     postsDiv.innerHTML += postHtmlContent;
@@ -75,3 +80,6 @@ async function loadPostsInRightOrder() {
 }
 
 loadPostsInRightOrder();
+
+document.getElementById("copyright-year").textContent =
+  new Date().getFullYear();
