@@ -19,14 +19,14 @@ function displayPosts(singlePosts) {
   const postsDiv = document.getElementById("posts");
   singlePosts.forEach((postContainer) => {
     const postHtmlContent = `
-          <div class="w-[600px] p-4 bg-white shadow-md rounded-lg mb-6">
+          <div class="flex flex-col justify-center items-center w-[360px] md:w-[360] lg:w-[500px] p-4 bg-white shadow-md rounded-lg mb-6">
               <p>By: ${postContainer.publisher_name}</p>
               <h2 class="text-xl font-bold mb-2">${postContainer.title}</h2>
               <p class="text-gray-700 mb-4">${postContainer.content}</p>
               
               ${
                 postContainer.image_path
-                  ? `<img src="${BASE_URL}${postContainer.image_path}" class="h-64" object-cover" alt="${postContainer.title}" />`
+                  ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
                   : ""
               }
               <div class="flex flex-row">
