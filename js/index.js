@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -6,6 +6,8 @@ import mysql from "mysql2/promise";
 import multer from "multer";
 import path from "path";
 import bcrypt from "bcrypt";
+
+// import jwt from "jsonwebtoken";
 
 const app = express();
 
@@ -25,6 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.use(cors());
+
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
