@@ -1,85 +1,107 @@
 import { BASE_URL } from "./config.js";
 
-async function fetchPosts() {
-  try {
-    const response = await fetch(`${BASE_URL}/posts`);
-    const data = await response.json(); // Fetch the entire response object
-    const posts = data.result; // Extract the posts array from the result property
-    return posts;
-  } catch (error) {
-    console.error(
-      "There was an error with fetching post with fetchPost",
-      error
-    );
-    return [];
-  }
+if (!localStorage.getItem("visitor_id")) {
+  localStorage.setItem("visitor_id", `visitor-${Date.now()}-${Math.random()}`);
 }
 
-function displayPosts(singlePosts) {
-  const postsDiv = document.getElementById("posts");
-  singlePosts.forEach((postContainer) => {
-    const postHtmlContent = `
-          <div class="flex flex-col justify-center items-center w-[360px] md:w-[360] lg:w-[500px] p-4 bg-white shadow-md rounded-lg mb-6">
-              <p>By: ${postContainer.publisher_name}</p>
-              <h2 class="text-xl font-bold mb-2">${postContainer.title}</h2>
-              <p class="text-gray-700 mb-4">${postContainer.content}</p>
-              
-              ${
-                postContainer.image_path
-                  ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
-                  : ""
-              }
-              <div class="flex flex-row">
-                <button onclick="likePost(${
-                  postContainer.id
-                })" class="p-4">Like</button>
-                <p class="p-4">Likes: ${postContainer.total_likes}</p>
-              </div>  
-          </div>
-        `;
-    postsDiv.innerHTML += postHtmlContent;
-  });
-}
+const visitor_id = localStorage.getItem("visitor_id");
+console.log("Visitor ID:", visitor_id);
 
-fetchPosts();
+document.addEventListener("DOMContentLoaded", () => {
+  async function fetchPosts() {
+    const token = localStorage.getItem("token");
 
-async function likePost(postId) {
-  const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await fetch(`${BASE_URL}/posts`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  try {
-    const response = await fetch(`${BASE_URL}/posts/${postId}/like`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ user_id }),
-    });
-
-    if (response.ok) {
-      console.log("Post liked successfully!");
-      // Optionally update the UI to reflect the like
-    } else {
-      console.error("Failed to like the post.");
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.result || [];
+    } catch (error) {
+      console.error("Error fetching posts:", error.message);
+      return [];
     }
-  } catch (error) {
-    console.error("Error liking the post:", error);
   }
-}
 
-if (!localStorage.getItem("user_id")) {
-  localStorage.setItem("user_id", `anon-${Date.now()}-${Math.random()}`);
-}
-const user_id = localStorage.getItem("user_id");
+  function displayPosts(singlePosts) {
+    const postsDiv = document.getElementById("posts");
+    postsDiv.innerHTML = "";
+    singlePosts.forEach((postContainer) => {
+      const postDiv = document.createElement("div");
+      postDiv.className =
+        "flex flex-col justify-center items-center w-[360px] md:w-[360] lg:w-[500px] p-4 bg-white shadow-md rounded-lg mb-6";
 
-// Attach the function to the global scope
-window.likePost = likePost;
+      postDiv.innerHTML = `
+        <p>By: ${postContainer.publisher_name}</p>
+        <h2 class="text-xl font-bold mb-2">${postContainer.title}</h2>
+        <p class="text-gray-700 mb-4">${postContainer.content}</p>
+        ${
+          postContainer.image_path
+            ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
+            : ""
+        }
+        <div class="flex flex-row" data-post-id="${postContainer.id}">
+          <button class="like-button p-4">Like</button>
+          <p class="p-4 likes-count">Likes: ${postContainer.total_likes}</p>
+        </div>`;
+      postsDiv.appendChild(postDiv);
+    });
+  }
 
-async function loadPostsInRightOrder() {
-  const waitOnFetchPosts = await fetchPosts();
-  displayPosts(waitOnFetchPosts);
-}
+  async function likePost(postId) {
+    try {
+      const response = await fetch(`${BASE_URL}/posts/${postId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: visitor_id }),
+      });
 
-loadPostsInRightOrder();
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Post liked successfully!");
 
-document.getElementById("copyright-year").textContent =
-  new Date().getFullYear();
+        const postDiv = document.querySelector(`[data-post-id="${postId}"]`);
+        const likesCountElement = postDiv.querySelector(".likes-count");
+
+        if (likesCountElement) {
+          likesCountElement.textContent = `Likes: ${data.total_likes}`;
+        }
+      } else {
+        const error = await response.json();
+        console.error("Failed to like the post:", error.error);
+      }
+    } catch (error) {
+      console.error("Error liking the post:", error);
+    }
+  }
+
+  const postsDiv = document.getElementById("posts");
+  postsDiv.addEventListener("click", (event) => {
+    if (event.target && event.target.classList.contains("like-button")) {
+      const postDiv = event.target.closest("[data-post-id]");
+      const postId = postDiv.getAttribute("data-post-id");
+      const likesCountElem = postDiv.querySelector(".likes-count");
+
+      likePost(postId, likesCountElem);
+    }
+  });
+
+  async function loadPostsInRightOrder() {
+    const posts = await fetchPosts();
+    displayPosts(posts);
+  }
+
+  loadPostsInRightOrder();
+
+  document.getElementById("copyright-year").textContent =
+    new Date().getFullYear();
+});
+
