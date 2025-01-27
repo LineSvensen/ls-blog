@@ -46,7 +46,7 @@ const upload = multer({
 
 app.use(
   cors({
-    origin: "http://127.0.0.1:5503",
+    origin: ["http://127.0.0.1:5503", "https://ls-blog-eight.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -238,6 +238,11 @@ app.post("/posts/:id/like", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
+  // Validate that both email and password are provided
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
 
   try {
     const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [
