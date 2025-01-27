@@ -66,45 +66,45 @@ document.addEventListener("DOMContentLoaded", () => {
   //         <p class="p-4 likes-count">Likes: ${postContainer.total_likes}</p>
   //       </div>
 
-  async function likePost(postId) {
-    try {
-      const response = await fetch(`${BASE_URL}/posts/${postId}/like`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id: visitor_id }),
-      });
+  // async function likePost(postId) {
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/posts/${postId}/like`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ user_id: visitor_id }),
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Post liked successfully!");
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log("Post liked successfully!");
 
-        const postDiv = document.querySelector(`[data-post-id="${postId}"]`);
-        const likesCountElement = postDiv.querySelector(".likes-count");
+  //       const postDiv = document.querySelector(`[data-post-id="${postId}"]`);
+  //       const likesCountElement = postDiv.querySelector(".likes-count");
 
-        if (likesCountElement) {
-          likesCountElement.textContent = `Likes: ${data.total_likes}`;
-        }
-      } else {
-        const error = await response.json();
-        console.error("Failed to like the post:", error.error);
-      }
-    } catch (error) {
-      console.error("Error liking the post:", error);
-    }
-  }
+  //       if (likesCountElement) {
+  //         likesCountElement.textContent = `Likes: ${data.total_likes}`;
+  //       }
+  //     } else {
+  //       const error = await response.json();
+  //       console.error("Failed to like the post:", error.error);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error liking the post:", error);
+  //   }
+  // }
 
-  const postsDiv = document.getElementById("posts");
-  postsDiv.addEventListener("click", (event) => {
-    if (event.target && event.target.classList.contains("like-button")) {
-      const postDiv = event.target.closest("[data-post-id]");
-      const postId = postDiv.getAttribute("data-post-id");
-      const likesCountElem = postDiv.querySelector(".likes-count");
+  // const postsDiv = document.getElementById("posts");
+  // postsDiv.addEventListener("click", (event) => {
+  //   if (event.target && event.target.classList.contains("like-button")) {
+  //     const postDiv = event.target.closest("[data-post-id]");
+  //     const postId = postDiv.getAttribute("data-post-id");
+  //     const likesCountElem = postDiv.querySelector(".likes-count");
 
-      likePost(postId, likesCountElem);
-    }
-  });
+  //     likePost(postId, likesCountElem);
+  //   }
+  // });
 
   async function loadPostsInRightOrder() {
     const posts = await fetchPosts();

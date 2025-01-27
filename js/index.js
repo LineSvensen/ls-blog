@@ -6,6 +6,13 @@ import multer from "multer";
 import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fs from "fs";
+
+const uploadsDir = "uploads";
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log(`Created missing directory: ${uploadsDir}`);
+}
 
 if (!process.env.JWT_SECRET || !process.env.DB_HOST) {
   console.error(
