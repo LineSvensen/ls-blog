@@ -1,5 +1,3 @@
-import BASE_URL from "./config";
-
 const createPostForm = document.getElementById("create-post-form");
 if (createPostForm) {
   createPostForm.addEventListener("submit", async (event) => {
@@ -13,7 +11,7 @@ if (createPostForm) {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/posts`, {
+      const response = await fetch("https://ls-blog.onrender.com/posts", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
