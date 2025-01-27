@@ -123,7 +123,7 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { title, content } = req.body;
-    const user_id = req.user?.userId; // Ensure userId exists
+    const user_id = req.user?.userId;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!user_id) {
@@ -151,7 +151,7 @@ app.get("/posts", async (req, res) => {
   try {
     const [posts] = await pool.query(`
       SELECT posts.*, 
-             users.username AS publisher_name, 
+             users.username AS publisher_name 
       FROM posts
       JOIN users ON posts.user_id = users.id
       GROUP BY posts.id
@@ -168,8 +168,8 @@ app.get("/posts", async (req, res) => {
 // app.get("/posts", async (req, res) => {
 //   try {
 //     const [posts] = await pool.query(`
-//       SELECT posts.*, 
-//              users.username AS publisher_name, 
+//       SELECT posts.*,
+//              users.username AS publisher_name,
 //              COUNT(likes.id) AS total_likes
 //       FROM posts
 //       LEFT JOIN likes ON posts.id = likes.post_id
