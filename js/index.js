@@ -11,17 +11,15 @@ if (!process.env.JWT_SECRET || !process.env.DB_HOST) {
   console.error(
     "Missing required environment variables. Check your .env file."
   );
-  process.exit(1); // Exit the application if required variables are missing
+  process.exit(1);
 }
 
 const app = express();
 const port = process.env.PORT || 5005;
 
-// const multer = require("multer");
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Ensure this directory exists
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -149,35 +147,12 @@ app.post(
   }
 );
 
-// if this was a platform where you needed to be a memeber to view posts. aka facebook etc
-// app.get("/posts", authenticateToken, async (req, res) => {
-//   try {
-//     const [posts] = await pool.query(`
-//       SELECT posts.*,
-//              users.username AS publisher_name,
-//              COUNT(likes.id) AS total_likes
-//       FROM posts
-//       LEFT JOIN likes ON posts.id = likes.post_id
-//       JOIN users ON posts.user_id = users.id
-//       GROUP BY posts.id
-//       ORDER BY posts.created_at DESC
-//     `);
-
-//     res.json({ result: posts });
-//   } catch (error) {
-//     console.error("Error fetching /posts:", error.message);
-//     res.status(500).json({ error: "Failed to fetch posts" });
-//   }
-// });
-
 app.get("/posts", async (req, res) => {
   try {
     const [posts] = await pool.query(`
       SELECT posts.*, 
              users.username AS publisher_name, 
-             COUNT(likes.id) AS total_likes
       FROM posts
-      LEFT JOIN likes ON posts.id = likes.post_id
       JOIN users ON posts.user_id = users.id
       GROUP BY posts.id
       ORDER BY posts.created_at DESC
@@ -190,56 +165,70 @@ app.get("/posts", async (req, res) => {
   }
 });
 
-app.post("/posts/:id/like", async (req, res) => {
-  const postId = req.params.id;
-  const { user_id } = req.body;
+// app.get("/posts", async (req, res) => {
+//   try {
+//     const [posts] = await pool.query(`
+//       SELECT posts.*, 
+//              users.username AS publisher_name, 
+//              COUNT(likes.id) AS total_likes
+//       FROM posts
+//       LEFT JOIN likes ON posts.id = likes.post_id
+//       JOIN users ON posts.user_id = users.id
+//       GROUP BY posts.id
+//       ORDER BY posts.created_at DESC
+//     `);
+//     res.json({ result: posts });
+//   } catch (error) {
+//     console.error("Error fetching /posts:", error.message);
+//     res.status(500).json({ error: "Failed to fetch posts" });
+//   }
+// });
 
-  try {
-    const [userExists] = await pool.execute(
-      "SELECT id FROM users WHERE id = ?",
-      [user_id]
-    );
-    if (userExists.length === 0) {
-      await pool.execute("INSERT INTO users (id, username) VALUES (?, ?)", [
-        user_id,
-        `Visitor-${Date.now()}`,
-      ]);
-    }
-    const [likeExists] = await pool.execute(
-      "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
-      [postId, user_id]
-    );
-    if (likeExists.length > 0) {
-      return res
-        .status(400)
-        .json({ error: "You have already liked this post." });
-    }
-    await pool.execute("INSERT INTO likes (post_id, user_id) VALUES (?, ?)", [
-      postId,
-      user_id,
-    ]);
-
-    const [likeCount] = await pool.execute(
-      "SELECT COUNT(*) AS total_likes FROM likes WHERE post_id = ?",
-      [postId]
-    );
-
-    console.log("Updated likes count:", likeCount[0].total_likes);
-
-    res.status(201).json({
-      message: "Post liked successfully.",
-      total_likes: likeCount[0].total_likes,
-    });
-  } catch (error) {
-    console.error("Error liking the post:", error);
-    res.status(500).json({ error: "Failed to like the post." });
-  }
-});
+// app.post("/posts/:id/like", async (req, res) => {
+//   const postId = req.params.id;
+//   const { user_id } = req.body;
+//   try {
+//     const [userExists] = await pool.execute(
+//       "SELECT id FROM users WHERE id = ?",
+//       [user_id]
+//     );
+//     if (userExists.length === 0) {
+//       await pool.execute("INSERT INTO users (id, username) VALUES (?, ?)", [
+//         user_id,
+//         `Visitor-${Date.now()}`,
+//       ]);
+//     }
+//     const [likeExists] = await pool.execute(
+//       "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
+//       [postId, user_id]
+//     );
+//     if (likeExists.length > 0) {
+//       return res
+//         .status(400)
+//         .json({ error: "You have already liked this post." });
+//     }
+//     await pool.execute("INSERT INTO likes (post_id, user_id) VALUES (?, ?)", [
+//       postId,
+//       user_id,
+//     ]);
+//     const [likeCount] = await pool.execute(
+//       "SELECT COUNT(*) AS total_likes FROM likes WHERE post_id = ?",
+//       [postId]
+//     );
+//     console.log("Updated likes count:", likeCount[0].total_likes);
+//     res.status(201).json({
+//       message: "Post liked successfully.",
+//       total_likes: likeCount[0].total_likes,
+//     });
+//   } catch (error) {
+//     console.error("Error liking the post:", error);
+//     res.status(500).json({ error: "Failed to like the post." });
+//   }
+// });
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate that both email and password are provided
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required." });
   }
@@ -282,7 +271,7 @@ app.post("/login", async (req, res) => {
 });
 
 function authenticateToken(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1]; // Extract token from the header
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     console.error("No token provided.");
@@ -295,7 +284,7 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ error: "Invalid token." });
     }
 
-    req.user = user; // Attach decoded token data (e.g., userId) to the request
+    req.user = user;
     next();
   });
 }

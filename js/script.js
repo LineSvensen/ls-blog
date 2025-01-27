@@ -46,13 +46,16 @@ document.addEventListener("DOMContentLoaded", () => {
             ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
             : ""
         }
-        <div class="flex flex-row" data-post-id="${postContainer.id}">
-          <button class="like-button p-4">Like</button>
-          <p class="p-4 likes-count">Likes: ${postContainer.total_likes}</p>
-        </div>`;
+        `;
       postsDiv.appendChild(postDiv);
     });
   }
+
+  // For adding likes:
+  // <div class="flex flex-row" data-post-id="${postContainer.id}">
+  //         <button class="like-button p-4">Like</button>
+  //         <p class="p-4 likes-count">Likes: ${postContainer.total_likes}</p>
+  //       </div>
 
   async function likePost(postId) {
     try {
@@ -104,4 +107,3 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("copyright-year").textContent =
     new Date().getFullYear();
 });
-

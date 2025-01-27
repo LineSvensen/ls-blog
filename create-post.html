@@ -6,26 +6,61 @@
     <title>create post</title>
     <script src="./js/create-post.js" defer></script>
     <script src="./js/script.js" type="module" defer></script>
+    <link href="./dist/output.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <main>
-      <a href="./index.html">back home</a>
-      <form id="create-post-form" enctype="multipart/form-data">
-        <label for="title">Title:</label>
-        <input type="text" name="title" id="title" required />
-
-        <label for="content">Content:</label>
-        <textarea name="content" id="content" required></textarea>
-
-        <label for="image">Image:</label>
+  <body class="font-poppins">
+    <main class="flex flex-col p-4">
+      <span class="pt-4"
+        ><a
+          href="./index.html"
+          class="text-blue-600 hover:text-blue-200 transform"
+          >Back home</a
+        ></span
+      >
+      <h1 class="py-8 text-xl font-bold">Create a post</h1>
+      <form
+        class="flex flex-col"
+        id="create-post-form"
+        enctype="multipart/form-data"
+      >
+        <label class="pb-4" for="title">Title:</label>
         <input
+          class="border p-4"
+          type="text"
+          name="title"
+          id="title"
+          required
+        />
+
+        <label class="py-4" for="content">Content:</label>
+        <textarea
+          class="border h-32 lg:h-64"
+          name="content"
+          id="content"
+          required
+        ></textarea>
+
+        <label class="py-4" for="image">Image:</label>
+        <input
+          class="pb-4"
           type="file"
           name="image"
           id="image"
           accept="image/png, image/jpeg, image/gif, image/webp"
         />
 
-        <button type="submit">Submit</button>
+        <button
+          type="submit"
+          class="bg-green-600 text-white p-4 rounded-md hover:bg-green-400 shadow-md max-w-[360px] lg:max-w-[200px]"
+        >
+          Submit
+        </button>
       </form>
     </main>
   </body>
