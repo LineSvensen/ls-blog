@@ -7,6 +7,13 @@ import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+if (!process.env.JWT_SECRET || !process.env.DB_HOST) {
+  console.error(
+    "Missing required environment variables. Check your .env file."
+  );
+  process.exit(1); // Exit the application if required variables are missing
+}
+
 const app = express();
 const port = process.env.PORT || 5005;
 
@@ -118,17 +125,14 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { title, content } = req.body;
-    const user_id = req.user.userId; // Get the user ID from the token
+    const user_id = req.user?.userId; // Ensure userId exists
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    try {
-      console.log("Received Data:");
-      console.log("Title:", title);
-      console.log("Content:", content);
-      console.log("User ID:", user_id);
-      console.log("Image Path:", imagePath);
+    if (!user_id) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
 
-      // Insert the post into the database
+    try {
       const [result] = await pool.execute(
         "INSERT INTO posts (title, content, user_id, image_path) VALUES (?, ?, ?, ?)",
         [title, content, user_id, imagePath]
@@ -140,14 +144,33 @@ app.post(
       });
     } catch (error) {
       console.error("Error creating post:", error.message);
-      res.status(500).json({
-        error: `Failed to create post. ${error.message}`,
-      });
+      res.status(500).json({ error: "Failed to create post." });
     }
   }
 );
 
-app.get("/posts", authenticateToken, async (req, res) => {
+// if this was a platform where you needed to be a memeber to view posts. aka facebook etc
+// app.get("/posts", authenticateToken, async (req, res) => {
+//   try {
+//     const [posts] = await pool.query(`
+//       SELECT posts.*,
+//              users.username AS publisher_name,
+//              COUNT(likes.id) AS total_likes
+//       FROM posts
+//       LEFT JOIN likes ON posts.id = likes.post_id
+//       JOIN users ON posts.user_id = users.id
+//       GROUP BY posts.id
+//       ORDER BY posts.created_at DESC
+//     `);
+
+//     res.json({ result: posts });
+//   } catch (error) {
+//     console.error("Error fetching /posts:", error.message);
+//     res.status(500).json({ error: "Failed to fetch posts" });
+//   }
+// });
+
+app.get("/posts", async (req, res) => {
   try {
     const [posts] = await pool.query(`
       SELECT posts.*, 
@@ -267,8 +290,7 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ error: "Invalid token." });
     }
 
-    console.log("Decoded User:", user); // Add this to check the decoded user
-    req.user = user;
+    req.user = user; // Attach decoded token data (e.g., userId) to the request
     next();
   });
 }

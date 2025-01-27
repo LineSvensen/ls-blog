@@ -1,19 +1,22 @@
-const createPostForm = document.getElementById("create-post-form"); // Target the specific form
-
+const createPostForm = document.getElementById("create-post-form");
 if (createPostForm) {
   createPostForm.addEventListener("submit", async (event) => {
-    event.preventDefault(); // Prevent the default form submission
+    event.preventDefault();
 
-    const formData = new FormData(createPostForm); // Collect form data
-    const token = localStorage.getItem("token"); // Get the user's token from localStorage
+    const formData = new FormData(createPostForm);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must log in before creating a post.");
+      return;
+    }
 
     try {
       const response = await fetch("https://ls-blog.onrender.com/posts", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`, // Attach the token in the Authorization header
+          Authorization: `Bearer ${token}`,
         },
-        body: formData, // Send form data
+        body: formData,
       });
 
       if (response.ok) {
