@@ -35,15 +35,24 @@ document.addEventListener("DOMContentLoaded", () => {
     singlePosts.forEach((postContainer) => {
       const postDiv = document.createElement("div");
       postDiv.className =
-        "flex flex-col justify-center items-center w-[360px] md:w-[360] lg:w-[500px] p-4 bg-white shadow-md rounded-lg mb-6";
+        "flex flex-col justify-center items-center w-[360px] md:w-[500px] lg:w-[1000px] p-4 bg-white shadow-md rounded-lg mb-6";
 
       postDiv.innerHTML = `
-        <p>By: ${postContainer.publisher_name}</p>
+        <div class="flex flex-row p-4 text-gray-600">
+          <p class="px-2 text-sm">Av: ${postContainer.publisher_name} </p>
+          <p class="px-2 text-sm">Publisert: ${new Date(
+            postContainer.created_at
+          ).toLocaleDateString("no-NO", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })} </p>
+        </div>
         <h2 class="text-xl font-bold mb-2">${postContainer.title}</h2>
         <p class="text-gray-700 mb-4">${postContainer.content}</p>
         ${
           postContainer.image_path
-            ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-full h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
+            ? `<img src="${BASE_URL}${postContainer.image_path}" class="w-[500px] h-auto rounded-md object-cover mb-4" alt="${postContainer.title}" />`
             : ""
         }
         `;
