@@ -14,8 +14,9 @@ import pg from "pg";
 const { Pool } = pg;
 
 // ---------- Files / uploads ----------
+
 const uploadsDir =
-  process.env.NODE_ENV === "production" ? "/mnt/uploads" : "mnt/uploads";
+  process.env.NODE_ENV === "production" ? "/data/uploads" : "mnt/uploads";
 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
