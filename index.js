@@ -61,7 +61,7 @@ const upload = multer({
 app.use(
   cors({
     origin: ["http://127.0.0.1:5503", "https://ls-blog-eight.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
