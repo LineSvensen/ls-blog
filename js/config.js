@@ -1,1 +1,1 @@
-export const BASE_URL = "https://ls-blog.onrender.com";
+export const BASE_URL = "https://ls-blog.fly.dev";
